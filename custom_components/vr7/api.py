@@ -34,3 +34,23 @@ class VR7Api:
             robots = await r.json()
             self.robot_id = robots[0]["id"]
             return robots[0]
+        
+        async def start_cleaning(self):
+        """Reinigung starten."""
+        headers = {"Authorization": f"Bearer {self.token}"}
+
+        async with aiohttp.ClientSession() as session:
+            await session.post(
+                f"https://beehive.ksecosys.com/users/me/robots/{self.robot_id}/start",
+                headers=headers
+            )
+
+    async def return_to_base(self):
+        """Roboter zur Dockingstation schicken."""
+        headers = {"Authorization": f"Bearer {self.token}"}
+
+        async with aiohttp.ClientSession() as session:
+            await session.post(
+                f"https://beehive.ksecosys.com/users/me/robots/{self.robot_id}/dock",
+                headers=headers
+            )
