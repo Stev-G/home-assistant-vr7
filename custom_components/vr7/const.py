@@ -1,6 +1,6 @@
 DOMAIN = "vr7"
 
 CONF_EMAIL = "email"
-CONF_PASSWORD = "password"
+CONF_OTP = "otp"
 
 SCAN_INTERVAL = 60
