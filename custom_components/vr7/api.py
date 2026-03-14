@@ -35,7 +35,7 @@ class VR7Api:
             self.robot_id = robots[0]["id"]
             return robots[0]
         
-        async def start_cleaning(self):
+    async def start_cleaning(self):
         """Reinigung starten."""
         headers = {"Authorization": f"Bearer {self.token}"}
 
