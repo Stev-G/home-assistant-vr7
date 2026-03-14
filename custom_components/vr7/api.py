@@ -1,56 +1,49 @@
 import aiohttp
+from .const import API_HOST
+
 
 class VR7Api:
-    """Minimaler VR7 API Client."""
 
-    def __init__(self, email, password):
-        self.email = email
-        self.password = password
-        self.token = None
+    def __init__(self, token):
+        self.token = token
         self.robot_id = None
 
-    async def login(self):
-        """Login in die Vorwerk Cloud."""
-        async with aiohttp.ClientSession() as session:
-            r = await session.post(
-                "https://beehive.ksecosys.com/dashboard",
-                json={
-                    "email": self.email,
-                    "password": self.password,
-                    "platform": "ios"
-                }
-            )
-            data = await r.json()
-            self.token = data["access_token"]
+    def _headers(self):
+        return {
+            "Authorization": f"Bearer {self.token}",
+            "Content-Type": "application/json",
+        }
 
-    async def get_robot(self):
-        """Erste Roboter-ID abrufen."""
-        headers = {"Authorization": f"Bearer {self.token}"}
+    async def get_robots(self):
+
         async with aiohttp.ClientSession() as session:
-            r = await session.get(
-                "https://beehive.ksecosys.com/users/me/robots",
-                headers=headers
+
+            resp = await session.get(
+                f"{API_HOST}/users/me/robots",
+                headers=self._headers(),
             )
-            robots = await r.json()
-            self.robot_id = robots[0]["id"]
-            return robots[0]
-        
+
+            data = await resp.json()
+
+            if data:
+                self.robot_id = data[0]["id"]
+
+            return data
+
     async def start_cleaning(self):
-        """Reinigung starten."""
-        headers = {"Authorization": f"Bearer {self.token}"}
 
         async with aiohttp.ClientSession() as session:
+
             await session.post(
-                f"https://beehive.ksecosys.com/users/me/robots/{self.robot_id}/start",
-                headers=headers
+                f"{API_HOST}/users/me/robots/{self.robot_id}/start",
+                headers=self._headers(),
             )
 
     async def return_to_base(self):
-        """Roboter zur Dockingstation schicken."""
-        headers = {"Authorization": f"Bearer {self.token}"}
 
         async with aiohttp.ClientSession() as session:
+
             await session.post(
-                f"https://beehive.ksecosys.com/users/me/robots/{self.robot_id}/dock",
-                headers=headers
+                f"{API_HOST}/users/me/robots/{self.robot_id}/dock",
+                headers=self._headers(),
             )

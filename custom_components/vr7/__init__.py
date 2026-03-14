@@ -7,26 +7,19 @@ from .const import DOMAIN
 
 PLATFORMS = ["vacuum", "sensor", "button"]
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
-    """Set up VR7 from a config entry."""
 
-    # API-Client erstellen
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
+
     api = VR7Api(
-        entry.data["email"],
-        entry.data["password"],
+        entry.data["token"]
     )
 
-    # Login
-    await api.login()
-
-    # Coordinator erstellen
     coordinator = VR7Coordinator(hass, api)
+
     await coordinator.async_config_entry_first_refresh()
 
-    # Coordinator in hass.data speichern
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
 
-    # Plattformen laden
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
