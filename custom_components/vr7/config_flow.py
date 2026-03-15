@@ -14,6 +14,9 @@ from .const import (
     AUTH_HOST,
 )
 
+from .user_api import UserApiClient
+from .user_data import UserDataService
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -31,6 +34,7 @@ class VR7ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     email = None
     market = DEFAULT_MARKET
+    user_data_service = None
 
     async def async_step_user(self, user_input=None):
 
@@ -47,18 +51,17 @@ class VR7ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
                 market_settings = SUPPORTED_MARKETS[self.market]
 
-                await session.post(
-                    f"{AUTH_HOST}/passwordless/start",
-                    json={
-                        "connection": "email",
-                        "email": self.email,
-                        "send": "code",
-                        "authParams": {
-                            "scope": "openid profile email",
-                            "ui_locales": market_settings["locale"],
-                        },
-                    },
+                user_api_client = UserApiClient(
+                    session,
+                    host=AUTH_HOST,
+                    path_send_otp="/passwordless/start",
+                    path_validate_otp="/oauth/token",
+                    language=market_settings["locale"],
                 )
+
+                self.user_data_service = UserDataService(user_api_client)
+
+                await self.user_data_service.send_otp_mail(self.email)
 
                 return await self.async_step_otp()
 
@@ -89,35 +92,12 @@ class VR7ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             try:
 
-                session = async_get_clientsession(self.hass)
-
-                resp = await session.post(
-                    f"{AUTH_HOST}/oauth/token",
-                    json={
-                        "grant_type": "http://auth0.com/oauth/grant-type/passwordless/otp",
-                        "username": self.email,
-                        "otp": user_input[CONF_OTP],
-                        "realm": "email",
-                        "scope": "openid profile email",
-                    },
+                data = await self.user_data_service.validate_otp(
+                    self.email,
+                    user_input[CONF_OTP],
                 )
 
-                text = await resp.text()
-
-                if resp.status != 200:
-                    _LOGGER.error("OTP validation error %s: %s", resp.status, text)
-                    errors["base"] = "invalid_otp"
-                else:
-                    data = await resp.json()
-                    token = data["access_token"]
-
-                    return self.async_create_entry(
-                        title="Vorwerk VR7",
-                        data={
-                            CONF_EMAIL: self.email,
-                            CONF_TOKEN: token,
-                        },
-                    )
+                token = data["access_token"]
 
                 return self.async_create_entry(
                     title="Vorwerk VR7",
