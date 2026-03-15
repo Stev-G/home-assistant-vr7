@@ -1,4 +1,5 @@
 import logging
+from typing import List, Dict, Any, Optional
 
 from .const import COMP_HOST
 
@@ -23,34 +24,38 @@ class VR7Api:
             "Content-Type": "application/json",
         }
 
-    async def _request(self, method, path, json=None):
-        """Make request to Vorwerk API."""
+    async def _request(self, 
+                       method: str, 
+                       path: str,
+                       json: Optional[Dict[str, Any]] = None,
+                       additional_headers: Optional[Dict[str, str]] = None,
+                       )-> Any:
+                        headers = self._headers()
+                        if additional_headers:
+                            headers.update(additional_headers)  
 
-        url = f"{COMP_HOST}{path}"
+                        """Make request to Vorwerk API."""
 
-        _LOGGER.debug("VR7 API request %s %s", method, url)
+                        url = f"{COMP_HOST}{path}"
 
-        async with self.session.request(
-            method,
-            url,
-            json=json,
-            headers=self._headers(),
-        ) as response:
+                        _LOGGER.debug("VR7 API request %s %s", method, url)
 
-            text = await response.text()
+                        async with self.session.request(method, url, json=json, headers = headers) as response:
 
-            if response.status != 200:
-                _LOGGER.error(
-                    "VR7 API error status=%s response=%s",
-                    response.status,
-                    text,
-                )
-                raise Exception("VR7 API request failed")
+                            text = await response.text()
 
-            if not text:
-                return None
+                            if response.status != 200:
+                                _LOGGER.error(
+                                    "VR7 API error status=%s response=%s",
+                                    response.status,
+                                    text,
+                                )
+                                raise Exception("VR7 API request failed")
 
-            return await response.json()
+                            if not text:
+                                return None
+
+                            return await response.json()
 
     async def get_robots(self):
         """Fetch robots for current user."""
