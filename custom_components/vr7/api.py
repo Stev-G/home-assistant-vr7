@@ -25,24 +25,14 @@ class VR7Api:
 
         resp = await self.session.get(url, headers=self._headers())
 
-        text = await resp.text()
-
         if resp.status != 200:
-            _LOGGER.error(
-                "Robot discovery failed status=%s response=%s",
-                resp.status,
-                text,
-            )
+            text = await resp.text()
+            _LOGGER.error("Robot discovery failed %s %s", resp.status, text)
             raise Exception("Robot discovery failed")
 
         data = await resp.json()
 
-        robots = data.get("robots", [])
-
-        if not robots:
-            raise Exception("No robots found")
-
-        return robots
+        return data
     
     async def get_robot_id(self):
 
