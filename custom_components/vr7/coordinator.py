@@ -1,19 +1,25 @@
+import logging
 from datetime import timedelta
+
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from .const import SCAN_INTERVAL
+
+from .const import DOMAIN, SCAN_INTERVAL
+
+_LOGGER = logging.getLogger(__name__)
+
 
 class VR7Coordinator(DataUpdateCoordinator):
-    """Coordinator für regelmäßige Status-Updates vom VR7."""
 
     def __init__(self, hass, api):
-        super().__init__(
-            hass,
-            logger=None,  # optional: Logger einfügen
-            name="VR7",
-            update_interval=timedelta(seconds=SCAN_INTERVAL),
-        )
         self.api = api
 
+        super().__init__(
+            hass,
+            _LOGGER,
+            name=DOMAIN,
+            update_interval=timedelta(seconds=SCAN_INTERVAL),
+        )
+
     async def _async_update_data(self):
-        """Daten vom Roboter abrufen."""
-        return await self.api.get_robot()
+        """Fetch data from VR7 cloud."""
+        return await self.api.get_robots()
