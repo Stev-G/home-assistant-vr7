@@ -21,20 +21,38 @@ class VR7Api:
 
     async def get_robots(self):
 
-        url = f"{API_HOST}/users/me/robots"
+        url = f"{API_HOST}/dashboard"
 
         resp = await self.session.get(url, headers=self._headers())
 
+        text = await resp.text()
+
         if resp.status != 200:
-            text = await resp.text()
-            _LOGGER.error("Robot discovery failed %s %s", resp.status, text)
+            _LOGGER.error(
+                "Robot discovery failed status=%s response=%s",
+                resp.status,
+                text,
+            )
             raise Exception("Robot discovery failed")
 
         data = await resp.json()
 
-        if not data:
+        robots = data.get("robots", [])
+
+        if not robots:
             raise Exception("No robots found")
 
-        self.robot_id = data[0]["id"]
+        return robots
+    
+    async def get_robot_id(self):
 
-        return data
+        if self.robot_id:
+            return self.robot_id
+
+        robots = await self.get_robots()
+
+        self.robot_id = robots[0]["id"]
+
+        _LOGGER.debug("VR7 robot discovered: %s", self.robot_id)
+
+        return self.robot_id

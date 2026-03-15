@@ -20,6 +20,15 @@ class VR7Coordinator(DataUpdateCoordinator):
             update_interval=timedelta(seconds=SCAN_INTERVAL),
         )
 
-    async def _async_update_data(self):
-        """Fetch data from VR7 cloud."""
-        return await self.api.get_robots()
+    async def get_robot_id(self):
+
+        if self.robot_id:
+            return self.robot_id
+
+        robots = await self.get_robots()
+
+        self.robot_id = robots[0]["id"]
+
+        _LOGGER.debug("VR7 robot discovered: %s", self.robot_id)
+
+        return self.robot_id
