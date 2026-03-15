@@ -45,7 +45,7 @@ class UserApiClient:
 
         payload = {
             "grant_type": "http://auth0.com/oauth/grant-type/passwordless/otp",
-            "client_id": "mykobold-android",
+            "client_id": CLIENT_ID,
             "username": email,
             "otp": otp,
             "realm": "email",
