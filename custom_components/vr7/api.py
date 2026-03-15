@@ -14,9 +14,12 @@ class VR7Api:
         self.robot_id = None
 
     def _headers(self):
+        """Return headers for Vorwerk API requests."""
         return {
             "Authorization": f"Bearer {self.token}",
             "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "okhttp/4.9.2",
         }
 
     async def get_robots(self):
