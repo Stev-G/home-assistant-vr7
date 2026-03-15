@@ -1,10 +1,15 @@
 import aiohttp
+import logging
+
 from .const import API_HOST
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class VR7Api:
 
-    def __init__(self, token):
+    def __init__(self, session, token):
+        self.session = session
         self.token = token
         self.robot_id = None
 
@@ -16,34 +21,20 @@ class VR7Api:
 
     async def get_robots(self):
 
-        async with aiohttp.ClientSession() as session:
+        url = f"{API_HOST}/users/me/robots"
 
-            resp = await session.get(
-                f"{API_HOST}/users/me/robots",
-                headers=self._headers(),
-            )
+        resp = await self.session.get(url, headers=self._headers())
 
-            data = await resp.json()
+        if resp.status != 200:
+            text = await resp.text()
+            _LOGGER.error("Robot discovery failed %s %s", resp.status, text)
+            raise Exception("Robot discovery failed")
 
-            if data:
-                self.robot_id = data[0]["id"]
+        data = await resp.json()
 
-            return data
+        if not data:
+            raise Exception("No robots found")
 
-    async def start_cleaning(self):
+        self.robot_id = data[0]["id"]
 
-        async with aiohttp.ClientSession() as session:
-
-            await session.post(
-                f"{API_HOST}/users/me/robots/{self.robot_id}/start",
-                headers=self._headers(),
-            )
-
-    async def return_to_base(self):
-
-        async with aiohttp.ClientSession() as session:
-
-            await session.post(
-                f"{API_HOST}/users/me/robots/{self.robot_id}/dock",
-                headers=self._headers(),
-            )
+        return data

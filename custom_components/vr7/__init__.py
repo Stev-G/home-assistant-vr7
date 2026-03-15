@@ -1,17 +1,22 @@
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import VR7Api
 from .coordinator import VR7Coordinator
 from .const import DOMAIN
+
 
 PLATFORMS = ["vacuum", "sensor", "button"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
+    session = async_get_clientsession(hass)
+
     api = VR7Api(
-        entry.data["token"]
+        session,
+        entry.data["token"],
     )
 
     coordinator = VR7Coordinator(hass, api)
