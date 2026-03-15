@@ -1,7 +1,7 @@
 import aiohttp
 import logging
 
-from .const import API_HOST
+from .const import API_HOST, COMP_HOST
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class VR7Api:
 
     async def get_robots(self):
 
-        url = f"{API_HOST}/dashboard"
+        url = f"{COMP_HOST}/users/me/robots"
 
         resp = await self.session.get(url, headers=self._headers())
 
