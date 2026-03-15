@@ -1,4 +1,5 @@
 import logging
+from .const import CLIENT_ID
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ class UserApiClient:
         url = f"{self.host}{self.path_send_otp}"
 
         payload = {
-            "client_id": "mykobold",
+            "client_id": CLIENT_ID,
             "connection": "email",
             "email": email,
             "send": "code",
@@ -27,7 +28,11 @@ class UserApiClient:
             }
         }
 
-        resp = await self.session.post(url, json=payload)
+        headers = {
+            "content-type": "application/json",
+        }
+
+        resp = await self.session.post(url, json=payload, headers=headers)
 
         if resp.status != 200:
             text = await resp.text()
@@ -40,13 +45,18 @@ class UserApiClient:
 
         payload = {
             "grant_type": "http://auth0.com/oauth/grant-type/passwordless/otp",
+            "client_id": "mykobold-android",
             "username": email,
             "otp": otp,
             "realm": "email",
             "scope": "openid profile email"
         }
 
-        resp = await self.session.post(url, json=payload)
+        headers = {
+            "content-type": "application/json",
+        }
+
+        resp = await self.session.post(url, json=payload, headers=headers)
 
         if resp.status != 200:
             text = await resp.text()

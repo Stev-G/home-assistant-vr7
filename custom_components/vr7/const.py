@@ -7,6 +7,8 @@ CONF_MARKET = "market"
 
 SCAN_INTERVAL = 60
 
+CLIENT_ID = "FPSBig7ePFvAE6q99cEDROM8gYUTygkD"
+
 DEFAULT_MARKET = "DE"
 
 AUTH_HOST = "https://mykobold.eu.auth0.com"
