@@ -17,7 +17,7 @@ class VR7Api:
     def _headers(self):
         """Return headers for Vorwerk API requests."""
         return {
-            "Authorization": f"Auth0Bearer {self._token}",
+            "Authorization": f"Auth0Bearer {self.token}",
             "accept": "application/vnd.neato.orbital-http.v1+json",
             "user-agent": "okhttp/4.12.0",
             "Content-Type": "application/json",
