@@ -6,12 +6,13 @@ _LOGGER = logging.getLogger(__name__)
 
 class UserApiClient:
 
-    def __init__(self, session, host, path_send_otp, path_validate_otp, language):
+    def __init__(self, session, host, path_send_otp, path_validate_otp, language, accept_language):
         self.session = session
         self.host = host
         self.path_send_otp = path_send_otp
         self.path_validate_otp = path_validate_otp
         self.language = language
+        self.accept_language = accept_language
 
     async def send_otp(self, email):
 
@@ -24,20 +25,18 @@ class UserApiClient:
             "send": "code",
             "authParams": {
                 "scope": "openid profile email",
-                "ui_locales": self.language
+                "ui_locales": self.accept_language
             }
         }
 
         headers = {
             "content-type": "application/json",
+            "accept-language": self.accept_language,
         }
-
-        resp = await self.session.post(url, json=payload, headers=headers)
-
-        if resp.status != 200:
-            text = await resp.text()
-            _LOGGER.error("OTP request failed %s %s", resp.status, text)
-            raise Exception("OTP request failed")
+        async with self.session.post(url, json=payload, headers=headers) as resp:
+            if resp.status != 200:
+                _LOGGER.error("OTP request failed with HTTP %s", resp.status)
+                raise Exception("OTP request failed")
 
     async def validate_otp(self, email, otp):
 
@@ -49,18 +48,18 @@ class UserApiClient:
             "username": email,
             "otp": otp,
             "realm": "email",
-            "scope": "openid profile email"
+            "scope": "openid profile email",
+            "platform": "android",
+            "locale": self.language,
+            "source": "vorwerk_auth0" if self.language == "de" else "vorwerk_auth0_international",
         }
 
         headers = {
             "content-type": "application/json",
+            "accept-language": self.accept_language,
         }
-
-        resp = await self.session.post(url, json=payload, headers=headers)
-
-        if resp.status != 200:
-            text = await resp.text()
-            _LOGGER.error("OTP validation failed %s %s", resp.status, text)
-            raise Exception("OTP validation failed")
-
-        return await resp.json()
+        async with self.session.post(url, json=payload, headers=headers) as resp:
+            if resp.status != 200:
+                _LOGGER.error("OTP validation failed with HTTP %s", resp.status)
+                raise Exception("OTP validation failed")
+            return await resp.json()

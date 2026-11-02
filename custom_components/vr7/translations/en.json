@@ -3,10 +3,17 @@
     "step": {
       "user": {
         "title": "Vorwerk VR7",
-        "description": "Enter your Vorwerk account credentials.",
+        "description": "Enter your Vorwerk account email and choose your market. We will send you a one-time code.",
         "data": {
           "email": "Email",
-          "password": "Password"
+          "market": "Market"
+        }
+      },
+      "otp": {
+        "title": "Verify your email",
+        "description": "Enter the one-time code sent to your email address.",
+        "data": {
+          "otp": "One-time code"
         }
       }
     }

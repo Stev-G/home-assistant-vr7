@@ -1,7 +1,7 @@
 {
   "domain": "vr7",
   "name": "Vorwerk VR7",
-  "version": "0.0.1",
+  "version": "0.1.8",
   "documentation": "https://github.com/Stev-G/home-assistant-vr7",
   "issue_tracker": "https://github.com/Stev-G/home-assistant-vr7/issues",
   "dependencies": [],

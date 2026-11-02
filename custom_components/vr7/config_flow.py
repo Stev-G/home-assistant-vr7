@@ -9,9 +9,11 @@ from .const import (
     CONF_EMAIL,
     CONF_OTP,
     CONF_TOKEN,
+    CONF_ID_TOKEN,
     CONF_MARKET,
     DEFAULT_MARKET,
     AUTH_HOST,
+    SUPPORTED_MARKETS,
 )
 
 from .user_api import UserApiClient
@@ -20,11 +22,6 @@ from .user_data import UserDataService
 _LOGGER = logging.getLogger(__name__)
 
 
-SUPPORTED_MARKETS = {
-    "DE": {"locale": "de-DE"},
-    "EN": {"locale": "en-US"},
-}
-
 MARKET_OPTIONS = list(SUPPORTED_MARKETS.keys())
 
 
@@ -32,9 +29,10 @@ class VR7ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
-    email = None
-    market = DEFAULT_MARKET
-    user_data_service = None
+    def __init__(self):
+        self.email = None
+        self.market = DEFAULT_MARKET
+        self.user_data_service = None
 
     async def async_step_user(self, user_input=None):
 
@@ -44,6 +42,8 @@ class VR7ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             self.email = user_input[CONF_EMAIL]
             self.market = user_input[CONF_MARKET]
+            await self.async_set_unique_id(self.email.casefold())
+            self._abort_if_unique_id_configured()
 
             try:
 
@@ -57,6 +57,7 @@ class VR7ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     path_send_otp="/passwordless/start",
                     path_validate_otp="/oauth/token",
                     language=market_settings["locale"],
+                    accept_language=market_settings["accept_language"],
                 )
 
                 self.user_data_service = UserDataService(user_api_client)
@@ -104,6 +105,8 @@ class VR7ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     data={
                         CONF_EMAIL: self.email,
                         CONF_TOKEN: token,
+                        CONF_ID_TOKEN: data.get("id_token"),
+                        CONF_MARKET: self.market,
                     },
                 )
 
