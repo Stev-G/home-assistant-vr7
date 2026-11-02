@@ -1,7 +1,7 @@
 import logging
 from typing import List, Dict, Any, Optional
 
-from .const import COMP_HOST
+from .const import COMP_HOST, DEFAULT_MARKET, SUPPORTED_MARKETS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -9,10 +9,11 @@ _LOGGER = logging.getLogger(__name__)
 class VR7Api:
     """API client for Vorwerk VR7."""
 
-    def __init__(self, session, token):
+    def __init__(self, session, token, market=DEFAULT_MARKET):
         """Initialize API client."""
         self.session = session
         self.token = token
+        self.market = market
         self.robot_id = None
 
     def _headers(self):
@@ -22,6 +23,9 @@ class VR7Api:
             "accept": "application/vnd.neato.orbital-http.v1+json",
             "user-agent": "okhttp/4.12.0",
             "Content-Type": "application/json",
+            "accept-language": SUPPORTED_MARKETS.get(
+                self.market, SUPPORTED_MARKETS[DEFAULT_MARKET]
+            )["accept_language"],
         }
 
     async def _request(self, 

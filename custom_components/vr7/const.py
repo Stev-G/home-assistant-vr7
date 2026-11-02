@@ -3,6 +3,7 @@ DOMAIN = "vr7"
 CONF_EMAIL = "email"
 CONF_OTP = "otp"
 CONF_TOKEN = "token"
+CONF_ID_TOKEN = "id_token"
 CONF_MARKET = "market"
 
 SCAN_INTERVAL = 60
@@ -18,6 +19,6 @@ COMP_HOST = "https://api-2-prod.companion.kobold.vorwerk.com"
 COMP_WS   = "wss://api-2-prod.companion.kobold.vorwerk.com/api/ws"
 
 SUPPORTED_MARKETS = {
-    "DE": {"locale": "de-DE"},
-    "EN": {"locale": "en-US"},
+    "DE": {"locale": "de", "accept_language": "de-DE"},
+    "EN": {"locale": "en", "accept_language": "en-EN"},
 }
