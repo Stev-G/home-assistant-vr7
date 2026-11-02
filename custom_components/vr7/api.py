@@ -1,7 +1,7 @@
 import logging
 from typing import List, Dict, Any, Optional
 
-from .const import COMP_HOST, DEFAULT_MARKET, SUPPORTED_MARKETS
+from .const import DEFAULT_MARKET, ORBITAL_HOST, SUPPORTED_MARKETS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class VR7Api:
 
                         """Make request to Vorwerk API."""
 
-                        url = f"{COMP_HOST}{path}"
+                        url = f"{ORBITAL_HOST}{path}"
 
                         _LOGGER.debug("VR7 API request %s %s", method, url)
 

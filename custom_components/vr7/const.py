@@ -13,7 +13,7 @@ CLIENT_ID = "FPSBig7ePFvAE6q99cEDROM8gYUTygkD"
 DEFAULT_MARKET = "DE"
 
 AUTH_HOST = "https://mykobold.eu.auth0.com"
-API_HOST = "https://beehive.ksecosys.com"
+ORBITAL_HOST = "https://orbital.ksecosys.com"
 
 COMP_HOST = "https://api-2-prod.companion.kobold.vorwerk.com"
 COMP_WS   = "wss://api-2-prod.companion.kobold.vorwerk.com/api/ws"
