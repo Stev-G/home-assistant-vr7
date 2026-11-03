@@ -15,6 +15,7 @@ class VR7Api:
         self.token = token
         self.market = market
         self.robot_id = None
+        self.robot_serial = None
 
     def _headers(self):
         """Return headers for Vorwerk API requests."""
@@ -28,38 +29,40 @@ class VR7Api:
             )["accept_language"],
         }
 
-    async def _request(self, 
-                       method: str, 
-                       path: str,
-                       json: Optional[Dict[str, Any]] = None,
-                       additional_headers: Optional[Dict[str, str]] = None,
-                       )-> Any:
-                        headers = self._headers()
-                        if additional_headers:
-                            headers.update(additional_headers)  
+    async def _request(
+        self,
+        method: str,
+        path: str,
+        json: Optional[Dict[str, Any]] = None,
+        additional_headers: Optional[Dict[str, str]] = None,
+    ) -> Any:
+        """Make a request to the Vorwerk Orbital API."""
+        headers = self._headers()
+        if additional_headers:
+            headers.update(additional_headers)
 
-                        """Make request to Vorwerk API."""
+        url = f"{ORBITAL_HOST}{path}"
+        _LOGGER.debug("VR7 API request %s %s", method, url)
 
-                        url = f"{ORBITAL_HOST}{path}"
+        async with self.session.request(
+            method, url, json=json, headers=headers
+        ) as response:
+            text = await response.text()
+            if not 200 <= response.status < 300:
+                _LOGGER.error(
+                    "VR7 API error method=%s path=%s status=%s response=%s",
+                    method,
+                    path,
+                    response.status,
+                    text,
+                )
+                raise Exception(
+                    f"VR7 API request failed with status {response.status}"
+                )
 
-                        _LOGGER.debug("VR7 API request %s %s", method, url)
-
-                        async with self.session.request(method, url, json=json, headers = headers) as response:
-
-                            text = await response.text()
-
-                            if response.status != 200:
-                                _LOGGER.error(
-                                    "VR7 API error status=%s response=%s",
-                                    response.status,
-                                    text,
-                                )
-                                raise Exception("VR7 API request failed")
-
-                            if not text:
-                                return None
-
-                            return await response.json()
+            if not text:
+                return None
+            return await response.json()
 
     async def get_robots(self):
         """Fetch robots for current user."""
@@ -82,7 +85,9 @@ class VR7Api:
 
         robots = await self.get_robots()
 
-        self.robot_id = robots[0]["id"]
+        robot = robots[0]
+        self.robot_id = robot["id"]
+        self.robot_serial = robot.get("serial") or robot.get("serial_number")
 
         _LOGGER.debug("VR7 robot discovered: %s", self.robot_id)
 
@@ -105,25 +110,49 @@ class VR7Api:
 
         return await self._request(
             "POST",
-            f"/robots/{robot_id}/cleaning/start",
+            f"/robots/{robot_id}/cleaning/v2",
+            json={
+                "runs": [
+                    {
+                        "settings": {
+                            "mode": "auto",
+                            "navigation_mode": "normal",
+                        },
+                        "map": None,
+                    }
+                ],
+                "ability": "cleaning.start",
+            },
+            additional_headers={
+                "mobile-app-version": "3.9.0",
+                "mobile-app-build": "37883",
+                "mobile-app-os": "android",
+                "mobile-app-os-version": "11",
+            },
         )
 
     async def pause_cleaning(self):
         """Pause cleaning."""
 
-        robot_id = await self.get_robot_id()
-
+        await self.get_robot_id()
+        robot_serial = self.robot_serial
+        if not robot_serial:
+            raise Exception("VR7 robot serial number is missing")
         return await self._request(
             "POST",
-            f"/robots/{robot_id}/cleaning/pause",
+            f"/vendors/3/robots/{robot_serial}/messages",
+            json={"ability": "cleaning.pause"},
         )
 
     async def dock(self):
         """Send robot to dock."""
 
-        robot_id = await self.get_robot_id()
-
+        await self.get_robot_id()
+        robot_serial = self.robot_serial
+        if not robot_serial:
+            raise Exception("VR7 robot serial number is missing")
         return await self._request(
             "POST",
-            f"/robots/{robot_id}/dock",
+            f"/vendors/3/robots/{robot_serial}/messages",
+            json={"ability": "navigation.return_to_base"},
         )
