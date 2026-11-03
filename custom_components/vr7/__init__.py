@@ -19,6 +19,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         session,
         entry.data.get(CONF_ID_TOKEN) or entry.data[CONF_TOKEN],
         market=entry.data.get(CONF_MARKET, DEFAULT_MARKET),
+        id_token=entry.data.get(CONF_ID_TOKEN),
     )
 
     coordinator = VR7Coordinator(hass, api)
