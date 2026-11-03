@@ -2,13 +2,13 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from . import button, sensor, vacuum  # noqa: F401
+from . import vacuum  # noqa: F401
 from .api import VR7Api
 from .const import CONF_ID_TOKEN, CONF_MARKET, CONF_TOKEN, DEFAULT_MARKET, DOMAIN
 from .coordinator import VR7Coordinator
 
 
-PLATFORMS = ["vacuum", "sensor", "button"]
+PLATFORMS = ["vacuum"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
