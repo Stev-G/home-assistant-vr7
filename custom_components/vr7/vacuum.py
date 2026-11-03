@@ -1,5 +1,7 @@
-from homeassistant.components.vacuum import VacuumEntity
-from homeassistant.components.vacuum import VacuumEntityFeature
+from homeassistant.components.vacuum import (
+    StateVacuumEntity,
+    VacuumEntityFeature,
+)
 
 from .const import DOMAIN
 
@@ -11,7 +13,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
     async_add_entities([VR7Vacuum(coordinator)])
 
 
-class VR7Vacuum(VacuumEntity):
+class VR7Vacuum(StateVacuumEntity):
     """Representation of the VR7 vacuum."""
 
     def __init__(self, coordinator):
@@ -22,7 +24,9 @@ class VR7Vacuum(VacuumEntity):
         self._attr_supported_features = (
             VacuumEntityFeature.START
             | VacuumEntityFeature.RETURN_HOME
+            | VacuumEntityFeature.STATE
         )
+        self._attr_activity = None
 
     @property
     def available(self):
@@ -34,4 +38,5 @@ class VR7Vacuum(VacuumEntity):
 
     async def async_return_to_base(self):
         """Return to docking station."""
-        await self.coordinator.api.return_to_base()
+        await self.coordinator.api.dock()
+
