@@ -1,3 +1,5 @@
+import asyncio
+
 from homeassistant.components.vacuum import (
     StateVacuumEntity,
     VacuumEntityFeature,
@@ -23,6 +25,7 @@ class VR7Vacuum(StateVacuumEntity):
 
         self._attr_supported_features = (
             VacuumEntityFeature.START
+            | VacuumEntityFeature.PAUSE
             | VacuumEntityFeature.RETURN_HOME
             | VacuumEntityFeature.STATE
         )
@@ -36,7 +39,13 @@ class VR7Vacuum(StateVacuumEntity):
         """Start cleaning."""
         await self.coordinator.api.start_cleaning()
 
+    async def async_pause(self):
+        """Pause cleaning."""
+        await self.coordinator.api.pause_cleaning()
+
     async def async_return_to_base(self):
         """Return to docking station."""
+        await self.coordinator.api.pause_cleaning()
+        await asyncio.sleep(2)
         await self.coordinator.api.dock()
 
