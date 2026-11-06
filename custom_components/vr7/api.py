@@ -1,5 +1,5 @@
 import logging
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 from .const import (
     COMP_HOST,
